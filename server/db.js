@@ -1,12 +1,6 @@
 const mongoose = require("mongoose");
 
-/**
- * Connect to MongoDB Atlas.
- *
- * Mongoose manages an internal connection pool (default 5 sockets).
- * We call this once at startup; if the connection drops Mongoose
- * will automatically attempt to reconnect.
- */
+
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI);
