@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { LogOut, LayoutDashboard, Wallet, PieChart, Settings, Bell } from 'lucide-react';
+import DashboardPage from './dashboard/DashboardPage';
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -68,41 +69,19 @@ const Dashboard = () => {
           </button>
         </header>
 
-        {/* Dashboard Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main overview panel */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="lm-card p-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="lm-badge-gold">
-                  <Wallet size={20} />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-[#1C1917]">Net Worth</h3>
-                  <p className="text-sm text-[#78716C]">Total balance across all accounts</p>
-                </div>
-              </div>
-              <p className="text-4xl font-bold text-[#1C1917]">$0.00</p>
-            </div>
-            
-            <div className="lm-card p-6 min-h-[300px] flex items-center justify-center">
-              <p className="text-[#78716C] text-center">
-                Transaction history and charts<br/>will appear here.
-              </p>
-            </div>
+        {/* Push notification opt-in strip */}
+        <div className="lm-card p-4 sm:p-5 border-l-4 border-l-[#0D9488] flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 mb-6">
+          <div className="flex-1">
+            <h3 className="font-bold text-[#1C1917]">Enable Push Notifications</h3>
+            <p className="text-sm text-[#78716C]">Get alerted instantly about new recurring bills and budget limits.</p>
           </div>
-
-          {/* Sidebar widgets */}
-          <div className="space-y-6">
-            <div className="lm-card p-6 border-t-4 border-t-[#0D9488]">
-              <h3 className="font-bold text-[#1C1917] mb-2">Enable Push Notifications</h3>
-              <p className="text-sm text-[#78716C] mb-4">Get alerted instantly about new recurring bills and budget limits.</p>
-              <button className="w-full py-2 bg-[#0D9488] hover:bg-[#0F766E] text-white text-sm font-medium rounded-lg transition-colors">
-                Setup Notifications
-              </button>
-            </div>
-          </div>
+          <button className="shrink-0 px-4 py-2 bg-[#0D9488] hover:bg-[#0F766E] text-white text-sm font-medium rounded-lg transition-colors">
+            Setup Notifications
+          </button>
         </div>
+
+        {/* Analytics Dashboard (owner: Musabbereen — see PROJECT_PLAN.md §10.3) */}
+        <DashboardPage />
       </main>
     </div>
   );
