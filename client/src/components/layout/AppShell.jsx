@@ -1,7 +1,9 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LogOut, LayoutDashboard, CalendarClock, Wallet, PieChart, Bell } from 'lucide-react';
+import { LogOut, LayoutDashboard, CalendarClock, Wallet, Tags, Target } from 'lucide-react';
+import NotificationBell from './NotificationBell';
+import PushOptInStrip from './PushOptInStrip';
 
 /**
  * The app chrome — sidebar, header, push opt-in strip — shared by every
@@ -9,11 +11,14 @@ import { LogOut, LayoutDashboard, CalendarClock, Wallet, PieChart, Bell } from '
  * (§10.4) can sit on the same shell instead of duplicating it.
  */
 
+// "Overview" is the analytics dashboard (§10.3) — there is no separate
+// /analytics route, so it isn't listed twice.
 const NAV_ITEMS = [
   { to: '/', label: 'Overview', icon: LayoutDashboard, end: true },
+  { to: '/transactions', label: 'Transactions', icon: Wallet },
+  { to: '/categories', label: 'Categories', icon: Tags },
+  { to: '/budgets', label: 'Budgets', icon: Target },
   { to: '/planning', label: 'Planning', icon: CalendarClock },
-  { to: '/transactions', label: 'Transactions', icon: Wallet, disabled: true },
-  { to: '/analytics', label: 'Analytics', icon: PieChart, disabled: true },
 ];
 
 const navClasses = ({ isActive }) =>
@@ -88,24 +93,10 @@ const AppShell = ({ title, subtitle, children }) => {
             {subtitle && <p className="text-[#78716C]">{subtitle}</p>}
           </div>
 
-          <button className="shrink-0 w-10 h-10 rounded-full bg-white border border-[#E7E5E4] flex items-center justify-center text-[#78716C] hover:text-[#1C1917] hover:border-[#1C1917] transition-all relative">
-            <Bell size={20} />
-            <span className="absolute top-2 right-2.5 w-2 h-2 bg-[#EF4444] rounded-full"></span>
-          </button>
+          <NotificationBell />
         </header>
 
-        {/* Push notification opt-in strip */}
-        <div className="lm-card p-4 sm:p-5 border-l-4 border-l-[#0D9488] flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 mb-6">
-          <div className="flex-1">
-            <h3 className="font-bold text-[#1C1917]">Enable Push Notifications</h3>
-            <p className="text-sm text-[#78716C]">
-              Get alerted instantly about new recurring bills and budget limits.
-            </p>
-          </div>
-          <button className="shrink-0 px-4 py-2 bg-[#0D9488] hover:bg-[#0F766E] text-white text-sm font-medium rounded-lg transition-colors">
-            Setup Notifications
-          </button>
-        </div>
+        <PushOptInStrip />
 
         {children}
       </main>

@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { BellRing, AlertTriangle } from 'lucide-react';
 import SectionCard from './SectionCard';
-import { formatCurrency, formatDate, daysUntil, dueLabel } from '../formatters';
-
-const REMINDER_WINDOW_DAYS = 7;
+import { formatCurrency, formatDate, dueLabel } from '../formatters';
+// Shared with the header bell so the two can never disagree about what's due.
+import { upcomingReminders, REMINDER_WINDOW_DAYS } from '../../../lib/reminders';
 
 const BADGE_STYLES = {
   overdue: 'bg-[#FEE2E2] text-[#EF4444]',
@@ -21,15 +21,7 @@ const BADGE_STYLES = {
  * the push version of this same list on its daily tick.
  */
 const RemindersSection = ({ rules, isLoading, error }) => {
-  const upcoming = useMemo(() => {
-    return rules
-      .filter((rule) => {
-        if (!rule.active) return false;
-        const days = daysUntil(rule.nextRun);
-        return days !== null && days <= REMINDER_WINDOW_DAYS;
-      })
-      .sort((a, b) => new Date(a.nextRun) - new Date(b.nextRun));
-  }, [rules]);
+  const upcoming = useMemo(() => upcomingReminders(rules), [rules]);
 
   return (
     <SectionCard
