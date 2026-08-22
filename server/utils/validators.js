@@ -21,14 +21,27 @@ const parseDate = (value) => {
   return Number.isNaN(d.getTime()) ? null : d;
 };
 
-const parsePositiveNumber = (value) => {
+/**
+ * Only a number or a numeric string is a number. Without this guard Number()
+ * quietly turns null, "" and [] into 0 — which parsePositiveNumber survives
+ * (0 fails its > 0 test) but parseNonNegativeNumber would accept, letting a
+ * missing budget limit land in the database as a very real limit of 0.
+ */
+const toFiniteNumber = (value) => {
+  if (typeof value !== "number" && typeof value !== "string") return null;
+  if (typeof value === "string" && value.trim() === "") return null;
   const n = Number(value);
-  return Number.isFinite(n) && n > 0 ? n : null;
+  return Number.isFinite(n) ? n : null;
+};
+
+const parsePositiveNumber = (value) => {
+  const n = toFiniteNumber(value);
+  return n !== null && n > 0 ? n : null;
 };
 
 const parseNonNegativeNumber = (value) => {
-  const n = Number(value);
-  return Number.isFinite(n) && n >= 0 ? n : null;
+  const n = toFiniteNumber(value);
+  return n !== null && n >= 0 ? n : null;
 };
 
 /**
