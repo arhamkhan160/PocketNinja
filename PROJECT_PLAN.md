@@ -153,6 +153,10 @@ RecurringRule {
   },
   interval: String,       // "daily" | "weekly" | "monthly"
   nextRun: Date,
+  anchorDay: Number,      // 1-31, day-of-month the rule was created on.
+                          // Monthly rules clamp from this, not from the last
+                          // run — otherwise a rule due on the 31st clamps to
+                          // Feb 28 and then stays on the 28th forever.
   active: Boolean
 }
 
@@ -218,6 +222,10 @@ GET    /api/recurring                                          → [RecurringRul
 POST   /api/recurring         { template, interval, nextRun }  → RecurringRule
 PUT    /api/recurring/:id                                      → RecurringRule
 DELETE /api/recurring/:id                                      → 204
+POST   /api/recurring/run-now                                  → { rulesProcessed, transactionsCreated }
+       ↳ runs the cron's due-rule pass for the calling user only. Added so the
+         daily job is demoable without waiting a day; scoped server-side, so it
+         can never touch another user's rules.
 
 GET    /api/goals                                              → [Goal]
 POST   /api/goals             { title, target, saved, deadline } → Goal
