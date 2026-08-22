@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import PlanningPage from './pages/planning/PlanningPage';
 
 // A simple wrapper to redirect authenticated users away from Login/Register pages
 const PublicRoute = ({ children }) => {
@@ -39,6 +40,7 @@ function AppRoutes() {
       
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<Dashboard />} />
+        <Route path="/planning" element={<PlanningPage />} />
       </Route>
       
       <Route path="*" element={<Navigate to="/" replace />} />
