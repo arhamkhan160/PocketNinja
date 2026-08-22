@@ -7,16 +7,22 @@
  * CRUD UI makes this unnecessary. Re-running it wipes and re-seeds only the
  * demo user's own data.
  *
- * Usage:  node scripts/seedDemoData.js   (reads server/.env, same as index.js)
+ * Usage:  node scripts/seedDemoData.js                          (default demo account)
+ *         node scripts/seedDemoData.js <email> <password> [name]
+ *
+ * Reads server/.env, same as index.js.
  */
 require("dotenv").config();
 const mongoose = require("mongoose");
 const connectDB = require("../db");
 const User = require("../models/User");
 const { Transaction, Category, Budget } = require("../models/_analyticsModels");
+const Goal = require("../models/Goal");
+const RecurringRule = require("../models/RecurringRule");
 
-const DEMO_EMAIL = "demo@pocketninja.app";
-const DEMO_PASSWORD = "demo1234";
+const DEMO_EMAIL = (process.argv[2] || "demo@pocketninja.app").toLowerCase();
+const DEMO_PASSWORD = process.argv[3] || "demo1234";
+const DEMO_NAME = process.argv[4] || "Demo User";
 
 const CATEGORY_SEED = [
   { name: "Food", type: "expense" },
@@ -52,7 +58,7 @@ const seed = async () => {
 
   let user = await User.findOne({ email: DEMO_EMAIL });
   if (!user) {
-    user = await User.create({ name: "Demo User", email: DEMO_EMAIL, password: DEMO_PASSWORD });
+    user = await User.create({ name: DEMO_NAME, email: DEMO_EMAIL, password: DEMO_PASSWORD });
     console.log(`Created demo user ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);
   } else {
     console.log(`Reusing existing demo user ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);
@@ -62,6 +68,8 @@ const seed = async () => {
     Transaction.deleteMany({ userId: user._id }),
     Category.deleteMany({ userId: user._id }),
     Budget.deleteMany({ userId: user._id }),
+    Goal.deleteMany({ userId: user._id }),
+    RecurringRule.deleteMany({ userId: user._id }),
   ]);
 
   const categories = await Category.insertMany(
@@ -110,7 +118,56 @@ const seed = async () => {
     { userId: user._id, categoryId: byName.Entertainment._id, month: currentMonth, limit: 150 },
   ]);
 
-  console.log(`Seeded ${categories.length} categories, ${transactions.length} transactions, 4 budgets across ${months.join(", ")}`);
+  // --- Mustain's slice: savings goals + recurring rules ---
+  const today = new Date();
+  const inDays = (n) => new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() + n));
+
+  const goals = await Goal.insertMany([
+    { userId: user._id, title: "Emergency Fund", target: 5000, saved: 1850, deadline: inDays(180) },
+    { userId: user._id, title: "New Laptop", target: 1200, saved: 940, deadline: inDays(45) },
+    { userId: user._id, title: "Trip to Cox's Bazar", target: 800, saved: 120, deadline: inDays(90) },
+    { userId: user._id, title: "Course Fees", target: 600, saved: 600, deadline: inDays(-10) }, // already met
+  ]);
+
+  const rules = await RecurringRule.insertMany([
+    {
+      userId: user._id,
+      template: { amount: 950, type: "expense", categoryId: byName.Rent._id, note: "Monthly rent" },
+      interval: "monthly",
+      nextRun: inDays(3), // due soon — inside the default 3-day reminder window
+      anchorDay: 1,
+      active: true,
+    },
+    {
+      userId: user._id,
+      template: { amount: 2800, type: "income", categoryId: byName.Salary._id, note: "Salary" },
+      interval: "monthly",
+      nextRun: inDays(9),
+      anchorDay: 1,
+      active: true,
+    },
+    {
+      userId: user._id,
+      template: { amount: 15, type: "expense", categoryId: byName.Entertainment._id, note: "Streaming subscription" },
+      interval: "weekly",
+      nextRun: inDays(-1), // already overdue — cron picks it up on the next pass
+      anchorDay: 1,
+      active: true,
+    },
+    {
+      userId: user._id,
+      template: { amount: 60, type: "expense", categoryId: byName.Transport._id, note: "Bus pass (paused)" },
+      interval: "monthly",
+      nextRun: inDays(20),
+      anchorDay: 20,
+      active: false, // inactive, so the toggle has something to show
+    },
+  ]);
+
+  console.log(
+    `Seeded ${categories.length} categories, ${transactions.length} transactions, 4 budgets, ` +
+      `${goals.length} goals, ${rules.length} recurring rules across ${months.join(", ")}`
+  );
   await mongoose.disconnect();
 };
 

@@ -4,6 +4,13 @@ const cors = require("cors");
 const connectDB = require("./db");
 const authRoutes = require("./routes/auth");
 const pushRoutes = require("./routes/push");
+// These three must be required BEFORE ./routes/analytics: analytics pulls in
+// models/_analyticsModels.js, which registers placeholder Transaction/Category/
+// Budget schemas. Whichever loads first wins the model name, and these are the
+// authoritative definitions (validation, indexes).
+const categoryRoutes = require("./routes/categories");
+const transactionRoutes = require("./routes/transactions");
+const budgetRoutes = require("./routes/budgets");
 const analyticsRoutes = require("./routes/analytics");
 const recurringRoutes = require("./routes/recurring");
 const goalRoutes = require("./routes/goals");
@@ -22,6 +29,9 @@ app.get("/api/health", (_req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/push", pushRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/transactions", transactionRoutes);
+app.use("/api/budgets", budgetRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/recurring", recurringRoutes);
 app.use("/api/goals", goalRoutes);
